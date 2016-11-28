@@ -1,0 +1,64 @@
+## You must customize these values
+# Set to $SX_CLUSTER_NAME from sxsetup.conf
+SX_CLUSTER_NAME = None
+
+# Set to SX_NODE_INTERNAL_IP from sxsetup.conf
+
+SX_CLUSTER_INTERNAL_IP = None
+
+# Set to SX_NODE_IP from sxsetup.conf
+
+SX_CLUSTER_EXTERNAL_IP = None
+
+# Set to SX_ADMIN_KEY from sxsetup.conf
+SX_CLUSTER_TOKEN = None
+
+### The values below have default values but you can override them
+
+## When a user logs in the first time a volume is created
+# This specifies the default size of that volume
+# SX_DEFAULT_VOLUME_SIZE = 100*2**30
+
+# Default replica count of volumes
+# SX_DEFAULT_REPLICA_COUNT = 1
+
+# Default max revisions of volumes
+# SX_DEFAULT_MAX_REVISIONS = 1
+
+# The port that SX runs on
+# SX_CLUSTER_PORT = 443
+
+# Whether SX uses SSL
+# SX_CLUSTER_SSL = True
+
+# How to reach SX from sxauthd
+# by default they run on same node, so localhost is used
+# SX_CLUSTER_INTERNAL_IP = "127.0.0.1"
+
+
+## SASL settings
+# Path to saslauthd socket
+# SASLAUTHD_MUX = '/var/run/saslauthd/mux'
+#
+# PAM service name
+# SASLAUTHD_SERVICE = 'sxauthd'
+
+## sxauthd settings
+# Basic auth realm
+# LOGINREALM = socket.getfqdn()
+#
+# Path where sxauthd runs
+# APPLICATION_ROOT = '/.auth/'
+#
+# Prefix each user created by sxauthd
+# SX_USER_PREFIX = 'u:'
+#
+# Prefix each device created by sxauthd
+# SX_CLONE_PREFIX = 'd:'
+
+## Flask webapp settings
+# SESSION_COOKIE_NAME = 'sxauthd'
+# SESSION_COOKIE_HTTPONLY = False
+# SESSION_COOKIE_SECURE = True
+# PREFERRED_URL_SCHEME = 'https'
+# JSON_AS_ASCII = False

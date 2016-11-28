@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+{% from "_formhelpers.html" import render_field %}
+{% block body %}
+<h2>Create cloud account</h2>
+<form action="{{ url_for('browser.create') }}" method=post>
+    <dl>
+        {{ render_field(form.display) }}
+    </dl>
+    {{ form.unique }}
+    <p><input type="submit" value="Create cloud account for this device"></p>
+</form>
+<script language='javascript'>
+    l = window.navigator.userAgent.split(new RegExp('[(;)]'))
+    s = l[2].trim().split(' ').slice(0,3).join(' ')
+    document.getElementById('display').value = l[1].trim() + ' ' + s
+</script>
+{% endblock %}

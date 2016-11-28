@@ -1,0 +1,37 @@
+dn: ou=groups,dc=example,dc=com
+ou: Groups
+objectClass: top
+objectClass: organizationalUnit
+description: Parent object of all UNIX groups
+
+dn: ou=people,dc=example,dc=com
+ou: People
+objectClass: top
+objectClass: organizationalUnit
+description: Parent object of all UNIX accounts
+
+# User primary group
+dn: cn=jsmith,ou=groups,dc=example,dc=com
+cn: jsmith
+objectClass: top
+objectClass: posixGroup
+gidNumber: 10000
+
+# User account
+dn: uid=jsmith,ou=people,dc=example,dc=com
+cn: John Smith
+givenName: John
+sn: Smith
+uid: jsmith
+uidNumber: 10000
+gidNumber: 10000
+homeDirectory: /home/jsmith
+mail: jsmith@dev.local
+objectClass: top
+objectClass: posixAccount
+objectClass: shadowAccount
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+loginShell: /bin/bash
+userPassword: {CRYPT}*

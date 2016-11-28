@@ -1,0 +1,11 @@
+*~
+*.sw?
+*.pyc
+src/build
+src/dist
+src/*.egg-info
+venv/
+dist/*.egg
+*.egg
+*.tar.gz
+/Dockerfile

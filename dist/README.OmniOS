@@ -1,0 +1,35 @@
+Cyrus SASL
+----------
+
+From ftp://ftp.cyrusimap.org/cyrus-sasl/cyrus-sasl-2.1.26.tar.gz
+Use the attached build.sh to build a package from build/cyrus-sasl based on
+https://github.com/omniti-labs/omnios-build.git build env.
+
+$ ./build.sh -p
+
+Then install the package:
+$ pfexec pkg install saslauthd
+
+Updated SX
+----------
+
+Build a new version of SX from git master.
+
+Set VER=1.0.1 in SX's build.sh, and download a newer version of SX from
+git master. Repack archive because OmniOS's tar doesn't support POSIX archives.
+
+# curl -L 'http://gitweb.skylable.com/gitweb/?p=sx.git;a=snapshot;h=7040b0c4081d03fb8899f2a732502b1ee684e7ed;sf=tgz' -o sx.tar.gz
+# gzcat sx.tar.gz | pax -r && rm -rf sx-1.0.1 && mv sx-7040b0c sx-1.0.1 && tar cf /path/to/build/sx-1.0.1.tar sx-1.0.1
+
+Install sxauthd
+---------------
+
+# tar xf sxauthd*.tar.gz && cd sxauthd
+# ./sxauthd_setup_omnios.sh /srv/sxauthd
+
+Run this from a boot script:
+# saslauthd -a ldap -m /var/run/saslauthd -O /etc/saslauthd.conf
+# uwsgi --ini /srv/sxauthd/sxauthd.ini --daemonize /var/log/sxauthd.log
+# sxserver restart
+
+See the main README on details how to use with web/SXDrive clients.

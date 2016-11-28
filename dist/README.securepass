@@ -1,0 +1,152 @@
+Requirements
+------------
+
+ * SX package version 1.0.1 or greater
+ * Python 2.6 or 2.7
+ * CentOS 6, 7 or Debian Jessie
+
+Upgrade instructions for CentOS
+-------------------------------
+
+ # tar xf sxauthd*.tar.gz && cd sxauthd*
+ # ./sxauthd_upgrade.sh /srv/sxauthd
+ # killall -s INT uwsgi
+ # chkconfig saslauthd on
+ # chkconfig --add sxauthd
+ # service sxauthd restart
+
+Installation instructions
+-------------------------
+
+ Perform the steps below on all SX cluster nodes.
+
+ Unpack sxauthd:
+ # tar xf sxauthd*.tar.gz && cd sxauthd*
+
+ Upgrade SX and install dependencies.
+
+     On CentOS:
+     # cp skylable-centos.repo /etc/yum.repos.d/skylable.repo
+     # yum install -y epel-release && yum install -y skylable-sx python-pip python-setuptools python-virtualenv cyrus-sasl gcc
+
+     On Debian/Ubuntu:
+     # cp skylable-debian.list /etc/apt/sources.list.d/skylable.list
+     # apt-key add GPG-KEY-skylable.asc
+     # apt-get update && apt-get install -y --no-install-recommends sx python-dev python-virtualenv sasl2-bin gcc
+
+     On Debian Jessie additionally:
+     # apt-get install virtualenv
+
+ Install and configure sxauthd:
+
+ # ./sxauthd_setup.sh /srv/sxauthd
+
+ sxauthd requires a working saslauthd daemon to authenticate users.
+
+ Enable services to start on boot:
+     On CentOS:
+     # chkconfig saslauthd on
+     # chkconfig --add sxauthd
+
+     On Debian:
+     Edit /etc/default/saslauthd and set 'START=yes'
+     # update-rc.d sxauthd defaults
+     # adduser www-data sasl
+
+ It is recommended that you have a syslog daemon running because
+ uwsgi/sxauthd logs messages through syslog.
+
+ (Re)start services:
+ # service saslauthd start
+ # service sxauthd start
+ # service sxserver restart (service sx restart on Debian)
+
+Using with PAM and SecurePass
+-----------------------------
+
+Configure PAM-RADIUS for SecurePass:
+  Debian:
+  # apt-get install libpam-radius-auth
+
+  CentOS:
+  # yum install pam_radius
+
+  Add to the end of /etc/pam_radius*.conf:
+  radius1.secure-pass.net mysharedsecret 3
+  radius2.secure-pass.net mysharedsecret 3
+
+  Replace 'mysharedsecret' with the one specified on the secure-pass.net
+  configuration panel (generate with 'head -c 33 | base64' for example).
+
+Set the authentication mechanism in saslauthd to pam:
+
+On Debian edit /etc/default/saslauthd and set:
+  MECHANISMS="pam"
+
+On CentOS edit /etc/sysconfig/saslauthd and set:
+  MECH="pam"
+
+Create the file /etc/pam.d/sxauthd with the following content:
+auth       sufficient   pam_radius_auth.so
+account    sufficient   pam_radius_auth.so
+password   required     pam_deny.so
+session    required     pam_deny.so
+
+Restart saslauthd:
+# service saslauthd restart
+
+Test from command-line (optional)
+# testsaslauthd -u <username> -p <OTP-token> -s sxauthd
+# tail /var/log/auth.log
+
+To test sxauthd:
+
+# tail /var/log/syslog
+
+How to use
+----------
+
+To use two-factor authentication set a PIN on secure-pass.net, and use 
+OTP token + PIN as your password.
+
+Install the latest version of SXDrive from http://www.skylable.com/download/#sxdrive.
+
+Perform these steps once:
+ * right click the tray icon of SXDrive and select Settings
+ * on the Account settings page click 'Start Wizard':
+   * Click 'I have company credentials'
+   * Server: yourcluster.example.com
+   * Login: your Secure-Pass username
+   * Password: your OTP token concatenated with your Secure-Pass PIN 
+   * Device name: autofilled, but editable description of device
+   * Click Next
+   * On the popup verify the SSL certificate and click 'Yes'
+   * Choose the (single) volume in the list and click Next
+   * Choose a local directory to synchronize and press Next
+   * Press Finish
+   * all the settings fields should be filled based on the (newly created) cluster user
+
+One-time setup for mobile device:
+ * end-user opens https://yourcluster.example.com/.auth/web in the mobile browser.
+ * enter your Secure-Pass username and OTP concatenated with your Secure-Pass PIN as the password
+ * press login
+ * customize the device name if needed
+ * press create
+ * the user is redirected to SXDrive with an activation link that autoconfigures access to the cluster.
+
+Note: the username or password is never saved on the device.
+
+What sxauthd does under the hood:
+ * validate the username/password using saslauthd 
+ * create a volume for the username, if it doesn't exist already
+ * create a secret key for the provided username and device name
+ * redirect the user with a device-specific link
+
+The secret key can be revoked by the admin independently for each device
+using sxacl. All devices get access to the same volume.
+
+Example output of sxacl after logging in from two devices:
+$ sxacl userlist --clone=u:test1 sx://sx.example.com
+u:test1                  (normal) - test1
+d:+ET057GiXiCrhLJrHRaZPQ (normal) - My Device (clone of 'u:test1')
+d:Re5swjuEWWCLjvSejJbLRw (normal) - Android (clone of 'u:test1')

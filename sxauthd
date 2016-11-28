@@ -1,0 +1,9 @@
+#%PAM-1.0
+auth	   required	pam_sepermit.so
+auth       substack     password-auth
+auth       include      postlogin
+auth       required     pam_listfile.so item=user sense=deny file=/etc/sxauthd.deny onerr=succeed
+account    required     pam_nologin.so
+account    include      password-auth
+password   required     pam_deny.so
+session    required     pam_deny.so

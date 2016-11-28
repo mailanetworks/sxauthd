@@ -1,0 +1,122 @@
+#!/bin/sh
+#
+# sxauthd - this init script starts and stops the SX authentication server
+#
+# chkconfig: 2345 80 20
+# description: Enterprise authentication for Skylable SX
+
+### BEGIN INIT INFO
+# Provides: sxauthd
+# Required-Start: $local_fs $network $remote_fs $time
+# Required-Stop: $local_fs $network $remote_fs $time
+# Default-Start: 2 3 4 5
+# Default-Stop: 0 1 6
+# Short-Description: start and stop uwsgi/sxauthd
+# Description: Enterprise authentication for Skylable SX
+### END INIT INFO
+
+# Source function library.
+test -f /lib/lsb/init-functions && . /lib/lsb/init-functions || {
+    . /etc/rc.d/init.d/functions;
+    start_daemon() {
+        shift
+        daemon --pidfile $@
+    }
+    log_success_msg() {
+        echo $1
+    }
+    log_failure_msg() {
+        echo $1
+    }
+}
+
+exec="/srv/sxauthd/bin/uwsgi"
+config="/srv/sxauthd/sxauthd.ini"
+pidfile=/var/run/uwsgi-sxauthd.pid
+
+start() {
+    [ -x $exec ] || exit 5
+    [ -x $exec_httpd ] || exit 5
+    [ -f $config ] || exit 6
+    msg="Starting sxauthd:"
+    echo -n "$msg "
+    start_daemon -p $pidfile $exec --daemonize --ini "$config" >/dev/null
+    retval=$?
+    printf '\r'
+    [ $retval -eq 0 ] && log_success_msg "sxauthd is running" || log_failure_msg "$msg"
+    echo
+    return $retval
+}
+
+stop() {
+    msg="Stopping sxauthd:"
+    echo -n "$msg "
+    killproc -p $pidfile "sxauthd"
+    retval=$?
+    printf '\r'
+    [ $retval -eq 0 ] && rm -f $pidfile && log_success_msg "sxauthd is stopped" || log_failure_msg "$msg"
+    echo
+    return $retval
+}
+
+restart() {
+    stop
+    start
+}
+
+reload() {
+    restart
+}
+
+force_reload() {
+    restart
+}
+
+rh_status() {
+    pidofproc -p $pidfile $exec >/dev/null
+    retval=$?
+    case $retval in
+        0) log_success_msg "sxauthd is running";;
+        1) log_failure_msg "sxauthd is dead but PID file exists";;
+        4) log_failure_msg "could not access PID file";;
+        *) log_failure_msg "sxauthd is stopped";;
+    esac
+    return $retval
+}
+
+rh_status_q() {
+    rh_status >/dev/null 2>&1
+}
+
+
+case "$1" in
+    start)
+        rh_status_q && exit 0
+        $1
+        ;;
+    stop)
+        rh_status_q || exit 0
+        $1
+        ;;
+    restart)
+        $1
+        ;;
+    reload)
+        rh_status_q || exit 7
+        $1
+        ;;
+    force-reload)
+        force_reload
+        ;;
+    status)
+        rh_status
+        ;;
+    condrestart|try-restart)
+        rh_status_q || exit 0
+        restart
+        ;;
+    *)
+        echo $"Usage: $0 {start|stop|status|restart|condrestart|try-restart|reload|force-reload}"
+        exit 2
+esac
+exit $?

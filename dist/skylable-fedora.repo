@@ -1,0 +1,4 @@
+[skylable]
+name=Skylable
+baseurl=http://cdn.skylable.com/fedora/$releasever/$basearch/
+gpgcheck=0
